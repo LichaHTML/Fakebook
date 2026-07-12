@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+
+    <title>Fakebook</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="/static/css/style.css" />
+
+    
+  </head>
+  <!-- distribucion: navbar arriba, sidebar a la izquierda, contenido a la derecha-->
+  <body>
+    {% include 'header.html' %}
+    <main>
+      <aside>
+        <h3>Menú</h3>
+
+        <ul>
+          <li>Inicio</li>
+          <li>Amigos</li>
+          <li>Mensajes</li>
+          <li>Configuración</li>
+        </ul>
+      </aside>
+      <section>{% block content %} {% endblock %}</section>
+    </main>
+  </body>
+</html>

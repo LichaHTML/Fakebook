@@ -1,0 +1,22 @@
+:root {
+
+    /* ========= Colores ========= */
+
+    --color-primary: #00ACAC;
+
+    --color-background: #DFDEDC;
+
+    --color-surface: #FFFFFF;
+
+    --color-dark: #464545;
+
+    --color-text: #000000;
+
+    --color-border: #A6A7A2;
+
+
+    /* ========= Tipografía ========= */
+
+    --font-primary: "Inter", sans-serif;
+
+}

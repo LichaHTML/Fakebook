@@ -1,0 +1,48 @@
+{% extends 'auth_base.html' %} {% block extra_css %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/login.css') }}"
+/>
+{% endblock %} {% block content %}
+
+<div class="cont">
+  <form class="form sign-in" method="POST" action="/registro">
+    <h2>Crear cuenta</h2>
+    {% if mensaje %}
+    <p class="mensaje">{{ mensaje }}</p>
+    {% endif %}
+    <label>
+      <span>Nombre completo</span>
+      <input type="text" name="nombre" required />
+    </label>
+
+    <label>
+      <span>Nombre de usuario</span>
+      <input type="text" name="username" required />
+    </label>
+
+    <label>
+      <span>Email</span>
+      <input type="email" name="email" required />
+    </label>
+
+    <label>
+      <span>Contraseña</span>
+      <input type="password" name="password" required />
+    </label>
+
+    <button type="submit" class="submit">Crear cuenta</button>
+  </form>
+
+  <div class="sub-cont">
+    <div class="img">
+      <div class="img__text m--up">
+        <h3>¿Ya tienes una cuenta?</h3>
+      </div>
+
+      <a href="/login" class="img__btn"> Iniciar sesión </a>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

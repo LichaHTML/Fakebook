@@ -1,0 +1,16 @@
+<!doctype html>
+<html>
+  <head>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/variables.css') }}"
+    />
+    {% block extra_css %}
+    <link rel="stylesheet" href="/static/css/login.css" />
+
+    {% endblock %}
+  </head>
+  <body>
+    {% block content %} {% endblock %}
+  </body>
+</html>
