@@ -6,6 +6,8 @@ from flask import Flask, redirect, render_template, request,  session, url_for
 
 app = Flask(__name__)
 
+
+
 from flask import session
 app.secret_key = "clave_secreta_para_sesiones"
 
@@ -152,7 +154,7 @@ def obtener_posts_por_usuario(usuario_id):
     conn.close()
     return posts
 
-
+crear_db()
 
 #------------RUTAS----------------
 
@@ -272,5 +274,4 @@ def crear_post_route():
   
 
 if __name__ == "__main__":
-    crear_db()
     app.run(debug=True)
