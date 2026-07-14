@@ -1,5 +1,7 @@
 import sqlite3
 
+from werkzeug.security import generate_password_hash, check_password_hash
+
 DB_PATH = "database/fakebook.db"
 
 from flask import Flask, redirect, render_template, request,  session, url_for
@@ -12,6 +14,7 @@ from flask import session
 app.secret_key = "clave_secreta_para_sesiones"
 
 #-------------FUNCIONES DB-------------
+import re
 
 def crear_db():
         conn = sqlite3.connect(DB_PATH)
@@ -40,6 +43,30 @@ def crear_db():
     """)
         conn.commit()
         conn.close()
+
+
+def username_existe(username):
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT id FROM usuarios WHERE username = ?", (username,))
+
+    usuario_existente = cursor.fetchone()
+    conn.close()
+    return usuario_existente
+
+
+def email_existe(email):
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT id FROM usuarios WHERE email = ?", (email,))
+
+    email_existente = cursor.fetchone()
+    conn.close()
+    return email_existente
 
 
 def crear_usuario(username, email, nombre, password):
@@ -81,14 +108,31 @@ def obtener_usuario_por_id(usuario_id):
 
 
 def validar_login(username, password):
+
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
-    cursor.execute("SELECT id FROM usuarios WHERE username = ? AND password = ?", (username, password))
+    cursor.execute(
+        """
+        SELECT id, password
+        FROM usuarios
+        WHERE username = ?
+        """,
+        (username,)
+    )
+
     usuario = cursor.fetchone()
+
     conn.close()
-    return usuario
+
+    if usuario and check_password_hash(
+        usuario["password"],
+        password
+    ):
+        return usuario
+
+    return None
 
 
 def obtener_post_por_id(post_id):
@@ -154,6 +198,24 @@ def obtener_posts_por_usuario(usuario_id):
     conn.close()
     return posts
 
+
+def password_valida(password):
+
+    if len(password) < 8:
+        return False, "La contraseña debe tener al menos 8 caracteres"
+    
+    if not re.search(r"[A-Z]", password):
+        return False, "La contraseña debe contener al menos una letra mayúscula"
+    
+    if not re.search(r"[a-z]", password):
+        return False, "La contraseña debe contener al menos una letra minúscula"
+    
+    if not re.search(r"\d", password):
+        return False, "La contraseña debe contener al menos un número"
+    
+    return True,""
+
+
 crear_db()
 
 #------------RUTAS----------------
@@ -187,17 +249,126 @@ def registro():
     registro_exitoso = False
 
     if request.method == "POST":
+
         nombre = request.form["nombre"]
         email = request.form["email"]
         username = request.form["username"]
         password = request.form["password"]
+
+        password_ok, error_password = password_valida(password)
+
+        if not password_ok:
+            mensaje = error_password
+
+            return render_template(
+                "registro.html",
+                nombre=nombre,
+                email=email,
+                username=username,
+                mensaje=mensaje,
+                registro_exitoso=False,
+                pagina_actual="registro"
+            )
+
+        usuario_existente = username_existe(username)
+        email_existente = email_existe(email)
+
+        if usuario_existente and email_existente:
+            mensaje = "El nombre de usuario y el email ya existen"
+
+            return render_template(
+                "registro.html",
+                nombre=nombre,
+                email=email,
+                username=username,
+                mensaje=mensaje,
+                registro_exitoso=False,
+                pagina_actual="registro"
+            )
+
+        elif usuario_existente:
+            mensaje = "El nombre de usuario ya existe"
+
+            return render_template(
+                "registro.html",
+                nombre=nombre,
+                email=email,
+                username=username,
+                mensaje=mensaje,
+                registro_exitoso=False,
+                pagina_actual="registro"
+            )
+
+        elif email_existente:
+            mensaje = "El email ya existe"
+
+            return render_template(
+                "registro.html",
+                nombre=nombre,
+                email=email,
+                username=username,
+                mensaje=mensaje,
+                registro_exitoso=False,
+                pagina_actual="registro"
+            )
+
+        password_hash = generate_password_hash(password)
+
+        if crear_usuario(username, email, nombre, password_hash):
+            mensaje = "Registro exitoso"
+            registro_exitoso = True
+
+            return redirect(url_for("login_route"))
+
+        else:
+            mensaje = "Error al registrar el usuario"
+            registro_exitoso = False
+
+    return render_template(
+        "registro.html",
+        nombre=nombre,
+        email=email,
+        username=username,
+        mensaje=mensaje,
+        registro_exitoso=registro_exitoso,
+        pagina_actual="registro"
+    )
+
+    nombre = ""
+    email = ""
+    username = ""
+    password = ""
+    mensaje = ""
+    registro_exitoso = False
+
+    if request.method == "POST":
+        nombre = request.form["nombre"]
+        email = request.form["email"]
+        username = request.form["username"]
+        password = request.form["password"]
+        usuario_repetido = username_existe(username)
+        email_repetido = email_existe(email)
         
+        password_ok, error_password = password_valida(password)
+
+        if not password_ok:
+            mensaje = error_password
+        
+            return render_template("registro.html",
+                                    nombre=nombre,
+                                    email=email,
+                                    username=username, 
+                                    password=password, 
+                                    mensaje=mensaje, 
+                                    registro_exitoso=False,
+                                    pagina_actual="registro")
+
         if crear_usuario(username, email, nombre, password):
             mensaje = "Registro exitoso"
             registro_exitoso = True
             return redirect(url_for("login_route"))
         else:
-            mensaje = "Error al registrar el usuario"
+            mensaje = "El nombre de usuario ya existe"
             registro_exitoso = False
 
     return render_template("registro.html", nombre=nombre, email=email, username=username, password=password, mensaje=mensaje, registro_exitoso=registro_exitoso, pagina_actual="registro")
