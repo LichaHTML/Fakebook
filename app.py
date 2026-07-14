@@ -444,5 +444,21 @@ def crear_post_route():
     return redirect("/")
   
 
+@app.route("/borrar_usuarios")
+def borrar_usuarios():
+
+    conexion = sqlite3.connect(DB_PATH)
+
+    cursor = conexion.cursor()
+
+    cursor.execute("DELETE FROM usuarios")
+
+    conexion.commit()
+
+    conexion.close()
+
+    return "Usuarios eliminados"
+
+
 if __name__ == "__main__":
     app.run(debug=True)

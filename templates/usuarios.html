@@ -3,8 +3,15 @@
 <p>Usuarios registrados:</p>
 <ul>
   {% for usuario in usuarios %}
-  <li>{{ usuario[3] }} ({{ usuario[1] }})</li>
-  <br />
+
+  <p>ID: {{ usuario["id"] }}</p>
+  <p>Nombre: {{ usuario["nombre"] }}</p>
+  <p>Email: {{ usuario["email"] }}</p>
+  <p>Username: {{ usuario["username"] }}</p>
+  <p>Password: {{ usuario["password"] }}</p>
+
+  <hr />
+
   {% endfor %}
 </ul>
 
