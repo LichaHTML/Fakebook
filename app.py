@@ -451,13 +451,25 @@ def borrar_usuarios():
 
     cursor = conexion.cursor()
 
+    cursor.execute("DELETE FROM posts")
+
+    cursor.execute("""
+        DELETE FROM sqlite_sequence
+        WHERE name='posts'
+    """)
+
     cursor.execute("DELETE FROM usuarios")
+
+    cursor.execute("""
+        DELETE FROM sqlite_sequence
+        WHERE name='usuarios'
+    """)
 
     conexion.commit()
 
     conexion.close()
 
-    return "Usuarios eliminados"
+    return "Base de datos limpiada"
 
 
 if __name__ == "__main__":
