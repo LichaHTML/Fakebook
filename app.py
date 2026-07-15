@@ -1,5 +1,6 @@
 import sqlite3
 
+from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 
 DB_PATH = "database/fakebook.db"
@@ -89,7 +90,7 @@ def obtener_usuarios():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
-    cursor.execute("SELECT id, username, email, nombre, fecha_registro FROM usuarios")
+    cursor.execute("SELECT id, username, email, nombre, fecha_registro, password FROM usuarios")
     usuarios = cursor.fetchall()
     conn.close()
     return usuarios
@@ -216,6 +217,23 @@ def password_valida(password):
     return True,""
 
 
+def login_requerido(f):
+
+    @wraps(f)
+    def funcion_decorada(*args, **kwargs):
+
+        if "usuario_id" not in session:
+            return redirect(url_for("login_route"))
+
+        return f(*args, **kwargs)
+
+    return funcion_decorada
+    if "usuario_id" not in session:
+        return False
+    
+    return True
+
+
 crear_db()
 
 #------------RUTAS----------------
@@ -240,6 +258,77 @@ def index():
 
 @app.route("/registro", methods=["GET", "POST"])
 def registro():
+
+    nombre = ""
+    email = ""
+    username = ""
+    mensaje = ""
+
+    if request.method == "POST":
+
+        nombre = request.form["nombre"]
+        email = request.form["email"]
+        username = request.form["username"]
+        password = request.form["password"]
+
+        password_ok, error_password = password_valida(password)
+
+        if not password_ok:
+            return render_template(
+                "registro.html",
+                nombre=nombre,
+                email=email,
+                username=username,
+                mensaje=error_password,
+                registro_exitoso=False,
+                pagina_actual="registro"
+            )
+
+        usuario_existente = username_existe(username)
+        email_existente = email_existe(email)
+
+        if usuario_existente and email_existente:
+            mensaje = "El nombre de usuario y el email ya existen"
+
+        elif usuario_existente:
+            mensaje = "El nombre de usuario ya existe"
+
+        elif email_existente:
+            mensaje = "El email ya existe"
+
+        else:
+
+            password_hash = generate_password_hash(password)
+
+            if crear_usuario(
+                username,
+                email,
+                nombre,
+                password_hash
+            ):
+                return redirect(url_for("login_route"))
+
+            mensaje = "Error al registrar el usuario"
+
+        return render_template(
+            "registro.html",
+            nombre=nombre,
+            email=email,
+            username=username,
+            mensaje=mensaje,
+            registro_exitoso=False,
+            pagina_actual="registro"
+        )
+
+    return render_template(
+        "registro.html",
+        nombre=nombre,
+        email=email,
+        username=username,
+        mensaje=mensaje,
+        registro_exitoso=False,
+        pagina_actual="registro"
+    )
 
     nombre = ""
     email = ""
@@ -375,13 +464,17 @@ def registro():
 
 
 @app.route("/usuarios")
+@login_requerido
 def listar_usuarios():
+
     usuarios = obtener_usuarios()
     return render_template("usuarios.html", usuarios=usuarios, pagina_actual="usuarios")
 
 
 @app.route("/usuario/<int:usuario_id>")
+@login_requerido
 def perfil(usuario_id):
+
     posts = obtener_posts_por_usuario(usuario_id)
     usuario = obtener_usuario_por_id(usuario_id)
     
@@ -411,7 +504,9 @@ def login_route():
 
 
 @app.route("/perfil")
+@login_requerido
 def ver_perfil():
+
     usuario_id = session.get("usuario_id")
     if usuario_id:
         return redirect(f"/usuario/{usuario_id}")
@@ -426,6 +521,7 @@ def logout():
 
 
 @app.route("/crear_post", methods=["POST"])
+@login_requerido
 def crear_post_route():
 
     usuario_id = session.get("usuario_id")
@@ -445,6 +541,7 @@ def crear_post_route():
   
 
 @app.route("/borrar_usuarios")
+@login_requerido
 def borrar_usuarios():
 
     conexion = sqlite3.connect(DB_PATH)
