@@ -1,99 +1,80 @@
+🟦 Logo
+
 # Fakebook
 
 Fakebook es una aplicación web tipo red social desarrollada como proyecto de aprendizaje utilizando Python y Flask.
 
 El objetivo del proyecto es replicar las funcionalidades principales de una red social mientras se aplican buenas prácticas de desarrollo backend, autenticación de usuarios, bases de datos y organización del código.
 
----
+────────────────────
 
-## Tecnologías utilizadas
+🚀 Tecnologías
 
-- Python
-- Flask
-- SQLite
-- HTML5
-- CSS3
-- Jinja2
-- Git
-- GitHub
+Python
+Flask
+PostgreSQL
+Bootstrap
 
----
+────────────────────
 
-## Funcionalidades implementadas
+✨ Funcionalidades
 
-### Usuarios
+✔ Registro
+✔ Login
+✔ CRUD
+✔ Likes
+✔ Seguidores
 
-- Registro de usuarios
-- Inicio de sesión
-- Cierre de sesión
-- Contraseñas protegidas mediante hash
-- Control de sesiones
-
-### Publicaciones
-
-- Crear publicaciones
-- Editar publicaciones propias
-- Eliminar publicaciones propias
-- Mostrar publicaciones ordenadas por fecha
-
-### Comentarios
-
-- Crear comentarios
-- Mostrar comentarios en cada publicación
-
-### Seguridad
-
-- Protección de rutas mediante login
-- Validación de permisos para editar publicaciones
-- Validación de permisos para eliminar publicaciones
-
----
+────────────────────
 
 ## Estructura del proyecto
 
-```
 Fakebook/
 │
 ├── app.py
 ├── fakebook.db
 ├── static/
-│   ├── css/
-│   └── img/
+│ ├── css/
+│ └── img/
 │
 ├── templates/
-│   ├── base.html
-│   ├── header.html
-│   ├── login.html
-│   ├── registro.html
-│   ├── perfil.html
-│   ├── usuarios.html
-│   └── post/
-│       ├── posts.html
-│       └── editar_post.html
-```
+│ ├── base.html
+│ ├── header.html
+│ ├── login.html
+│ ├── registro.html
+│ ├── perfil.html
+│ ├── usuarios.html
+│ └── post/
+│ ├── posts.html
+│ └── editar_post.html
 
----
+────────────────────
 
-## Próximas funcionalidades
+⚙ Instalación
 
-- Sistema de Likes
-- Seguir usuarios
-- Mejoras en perfiles
-- Búsqueda de usuarios
-- Paginación
-- Migración a PostgreSQL
-- Diseño con Bootstrap
+git clone...
 
----
+pip install...
 
-## Estado del proyecto
+python app.py
 
-Proyecto en desarrollo.
+────────────────────
 
-Actualmente continúa expandiéndose con nuevas funcionalidades y mejoras en arquitectura.
+🌐 Demo
 
----
+[Link de Render](https://fakebook-xyoa.onrender.com/)
 
-## Autor
+────────────────────
 
-Desarrollado por Lisandro como proyecto de portfolio para desarrollo web backend.
+📈 Roadmap
+
+✔ Login
+✔ Comentarios
+⬜ Mensajes privados
+⬜ Notificaciones
+⬜ Seguir usuarios
+⬜ Mejoras en perfiles
+⬜ Búsqueda de usuarios
+⬜ Paginación
+⬜ Migración a PostgreSQL
+⬜ Diseño con Bootstrap
