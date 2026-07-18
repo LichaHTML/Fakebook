@@ -29,24 +29,26 @@ Bootstrap
 
 ## Estructura del proyecto
 
+```
 Fakebook/
 │
 ├── app.py
 ├── fakebook.db
 ├── static/
-│ ├── css/
-│ └── img/
+│   ├── css/
+│   └── img/
 │
 ├── templates/
-│ ├── base.html
-│ ├── header.html
-│ ├── login.html
-│ ├── registro.html
-│ ├── perfil.html
-│ ├── usuarios.html
-│ └── post/
-│ ├── posts.html
-│ └── editar_post.html
+│   ├── base.html
+│   ├── header.html
+│   ├── login.html
+│   ├── registro.html
+│   ├── perfil.html
+│   ├── usuarios.html
+│   └── post/
+│       ├── posts.html
+│       └── editar_post.html
+```
 
 ────────────────────
 
