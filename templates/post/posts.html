@@ -1,0 +1,50 @@
+<section>
+  <form action="/crear_post" method="POST">
+    <textarea
+      name="contenido"
+      placeholder="¿Qué estás pensando?"
+      required
+    ></textarea>
+
+    <button type="submit">Publicar</button>
+  </form>
+
+  {% for post in posts %}
+  <div class="post">
+    <h2>{{ post.contenido }}</h2>
+    <p>Fecha de publicación: {{ post.fecha_post }}</p>
+    <p>Imagen: {{ post.imagen }}</p>
+    <p>Usuario: {{ post.username }}</p>
+    {% if usuario_id == post.usuario_id %}
+    <form action="/borrar_post/{{ post.id }}" method="POST">
+      <button type="submit">eliminar</button>
+    </form>
+    <a href="/editar_post/{{ post.id }}">Editar</a>
+    {% endif %}
+
+    <form action="/crear_comentario" method="POST">
+      <input type="hidden" name="post_id" value="{{ post.id }}" />
+
+      <input
+        type="text"
+        name="contenido"
+        placeholder="Escribe un comentario..."
+        required
+      />
+
+      <button type="submit">Comentar</button>
+    </form>
+    <hr />
+    <h4>Comentarios</h4>
+    {% for comentario in post.comentarios %}
+
+    <div class="comentario">
+      <strong> {{ comentario.username }} </strong>
+
+      <p>{{ comentario.contenido }}</p>
+    </div>
+
+    {% endfor %}
+  </div>
+  {% endfor %}
+</section>

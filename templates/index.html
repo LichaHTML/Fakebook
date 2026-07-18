@@ -1,14 +1,2 @@
-{% extends "base.html" %} {% block content %}
-
-<section>
-  {% for post in posts %}
-  <div class="post">
-    <h2>{{ post.contenido }}</h2>
-    <p>Fecha de publicación: {{ post.fecha_post }}</p>
-    <p>Imagen: {{ post.imagen }}</p>
-    <p>Usuario: {{ post.username }}</p>
-  </div>
-  {% endfor %}
-</section>
-
+{% extends "base.html" %} {% block content %} {% include "post/posts.html" %}
 {%endblock%}

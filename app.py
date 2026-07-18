@@ -42,6 +42,18 @@ def crear_db():
             FOREIGN KEY(usuario_id) REFERENCES usuarios(id)
         )
     """)
+        
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS comentarios (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            contenido TEXT NOT NULL,
+            fecha_comentario TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            usuario_id INTEGER NOT NULL,
+            post_id INTEGER NOT NULL,
+            FOREIGN KEY(usuario_id) REFERENCES usuarios(id),
+            FOREIGN KEY(post_id) REFERENCES posts(id)
+        )
+        """)
         conn.commit()
         conn.close()
 
@@ -165,6 +177,70 @@ def crear_post(contenido, imagen, usuario_id):
         conn.close()
 
 
+def crear_comentario(contenido, usuario_id, post_id):
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    try:
+
+        cursor.execute(
+            """
+            INSERT INTO comentarios
+            (contenido, usuario_id, post_id)
+            VALUES (?, ?, ?)
+            """,
+            (contenido, usuario_id, post_id)
+        )
+
+        conn.commit()
+
+        return True
+
+    except sqlite3.IntegrityError:
+
+        return False
+
+    finally:
+
+        conn.close()
+
+
+def obtener_comentarios_por_post(post_id):
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """
+        SELECT comentarios.id,
+               comentarios.contenido,
+               comentarios.fecha_comentario,
+               comentarios.usuario_id,
+               comentarios.post_id,
+               usuarios.username
+
+        FROM comentarios
+
+        JOIN usuarios
+        ON usuarios.id = comentarios.usuario_id
+
+        WHERE comentarios.post_id = ?
+
+        ORDER BY comentarios.fecha_comentario ASC
+        """,
+        (post_id,)
+    )
+
+    comentarios = cursor.fetchall()
+
+    conn.close()
+
+    return comentarios
+
+
 def listar_posts():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
@@ -198,6 +274,30 @@ def obtener_posts_por_usuario(usuario_id):
     posts = cursor.fetchall()
     conn.close()
     return posts
+
+
+def obtener_post_por_id(post_id):
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT posts.id,
+               posts.contenido,
+               posts.fecha_post,
+               posts.imagen,
+               posts.usuario_id,
+               usuarios.username
+        FROM posts
+        JOIN usuarios ON usuarios.id = posts.usuario_id
+        WHERE posts.id = ?
+    """, (post_id,))
+
+    post = cursor.fetchone()
+
+    conn.close()
+
+    return post
 
 
 def password_valida(password):
@@ -234,6 +334,33 @@ def login_requerido(f):
     return True
 
 
+def borrar_post(post_id):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute("DELETE FROM comentarios WHERE post_id = ?", (post_id,))
+    cursor.execute("DELETE FROM posts WHERE id = ?", (post_id,))
+
+    try:
+        conn.commit()
+    finally:
+        conn.close()
+ 
+
+def editar_post(post_id, contenido):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "UPDATE posts SET contenido = ? WHERE id = ?",
+        (contenido, post_id)
+    )
+
+    try:
+        conn.commit()
+    finally:    
+        conn.close()
+
 crear_db()
 
 #------------RUTAS----------------
@@ -244,12 +371,20 @@ def index():
 
     if usuario_id:
         usuario = obtener_usuario_por_id(usuario_id)
+
         posts = listar_posts()
+
+        posts_con_comentarios = []
+        for post in posts:
+            post = dict(post)
+            post["comentarios"] = obtener_comentarios_por_post(post["id"])
+            posts_con_comentarios.append(post)
 
         return render_template(
             "index.html",
             usuario=usuario,
-            posts=posts,
+            usuario_id=usuario_id,
+            posts=posts_con_comentarios,
             pagina_actual="index"
         )
     else:
@@ -567,6 +702,77 @@ def borrar_usuarios():
     conexion.close()
 
     return "Base de datos limpiada"
+
+
+@app.route("/crear_comentario", methods=["POST"])
+@login_requerido
+def crear_comentario_route():
+
+    usuario_id = session.get("usuario_id")
+
+    contenido = request.form["contenido"].strip()
+    post_id = request.form["post_id"]
+
+    crear_comentario(
+        contenido=contenido,
+        usuario_id=usuario_id,
+        post_id=post_id
+    )
+
+    return redirect("/")
+
+
+@app.route("/borrar_post/<int:post_id>", methods=["POST"])
+@login_requerido
+def borrar_post_post(post_id):
+
+    post = obtener_post_por_id(post_id)
+
+    if not post:
+        return "Post no encontrado", 404
+
+    if post["usuario_id"] != session["usuario_id"]:
+        return "No tenés permiso para borrar este post", 403
+
+    borrar_post(post_id)
+
+    return redirect("/")
+
+
+@app.route("/editar_post/<int:post_id>", methods=["GET"])
+@login_requerido
+def editar_post_get(post_id):
+
+    post = obtener_post_por_id(post_id)
+
+    if not post:
+        return "Post no encontrado", 404
+
+    if post["usuario_id"] != session["usuario_id"]:
+        return "No tenés permiso para editar este post", 403
+
+    return render_template("post/editar_post.html", post=post)
+
+@app.route("/editar_post/<int:post_id>", methods=["POST"])
+@login_requerido
+def editar_post_route(post_id):
+    post = obtener_post_por_id(post_id)
+
+    if not post:
+        return "Post no encontrado", 404
+
+    if post["usuario_id"] != session["usuario_id"]:
+        return "No tenés permiso para editar este post", 403
+
+    contenido = request.form["contenido"].strip()
+
+    if not contenido:
+        return "El contenido no puede estar vacío", 400
+
+    editar_post(post_id, contenido)
+
+    return redirect("/")
+
 
 
 if __name__ == "__main__":
